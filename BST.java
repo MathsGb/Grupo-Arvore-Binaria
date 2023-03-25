@@ -1,5 +1,7 @@
 package tree;
 
+import javax.swing.Painter;
+
 import lista.EstruturaDeDados;
 
 public class BST implements EstruturaDeDados{
@@ -41,34 +43,36 @@ public class BST implements EstruturaDeDados{
 
     @Override
     public void delete(int chave) {
-        
+
+        deleteNode(root, chave);
+        return;
     }
 
-    private void deleteNode(Node n, int key){
-        if (key >= n.getValue())
-        {
-            Node r = n.getRight();
+    private Node deleteNode(Node atual, int key) {
+        Node direita = atual.getRight();
+        Node esquerda = atual.getLeft();
+        int Valor = atual.getValue();
 
-            if (r.getValue() == key){
-                //verificar se r é folha
-                if (r.getRight() == null && r.getLeft() == null)
-                {
-                    //Caso 1
-                    n.setRight(null);
-                }
-                else if (r.getRight() == null){
-                    //Caso 2
-                    n.setRight(r.getLeft());
-                }
-                else if (r.getLeft() == null){
-                    //Caso 2
-                    n.setRight(r.getRight());
-                }
-                else{
-                    // Caso 3
-                }
-            }
+        if (key < Valor) {
+            atual.setLeft(deleteNode(esquerda, key));
         }
+        else if (key > Valor) {
+            atual.setRight(deleteNode(direita, key));
+        }
+        else {
+            // Nó com apenas um filho ou nenhum
+            if (esquerda == null) {
+                return direita;
+            }
+            else if (direita == null) {
+                return esquerda;
+            }
+
+            // Nó com dois filhos: pega o menor nó da subárvore da direita
+            atual.setValue(minimumNode(direita).getValue());
+            atual.setRight(deleteNode(direita, atual.getValue()));
+        }
+        return atual;
     }
 
     @Override
@@ -102,7 +106,7 @@ public class BST implements EstruturaDeDados{
         if(verify == false){
             return null;
         }
-        if(pai == root){ // Para o caso onde o pai é a raiz (Optei por retronar ele mesmo).
+        if(key == root.getValue()){ // Para o caso onde o pai é a raiz (Optei por retornar ele mesmo).
             return pai;
         }
         if(pai.getLeft() != null ){
@@ -146,10 +150,9 @@ public class BST implements EstruturaDeDados{
 
     @Override
     public int minimum() {
-
         return minimumNode(root).getValue();
     }
-
+    
     private Node minimumNode(Node no){
         if(no.getLeft() == null){
             return no;
@@ -175,88 +178,55 @@ public class BST implements EstruturaDeDados{
 
     @Override
     public int sucessor(int chave) {
+        Node atual = findNode(root, chave);
 
-        return searchSucessor(findNode(root, chave), chave);
-        // Boolean verify = search(chave);
-
-        // if(verify == null){ // Caso não haja um nó
-        //     System.out.println("Não há sucessor");
-        //     return -1 ; 
-        // }
-
-        // Node temp = findNode(root, chave);  //Variável para achar o nó que estou trabalhando.
-
-        // Node Pai = searchFather(root, chave);
-        
-        // if(temp.getRight() == null){ // Representa que "temp" é em uma Folha.
-            
-        //     if(Pai.getLeft() == temp){ // Para o caso de o filho ser pela esquerda(pai é o seu sucessor)
-        //         return Pai.getValue();
-        //     }
-
-        //     else{
-                
-        //         return chave ; 
-        //     }
-        // }
-
-        // else{ // Para o caso onde o nó não é uma folha
-           
-        //     return searchSucessor(temp).getValue();
-        // }
-    }
-    
-    private int searchSucessor(Node atual, int chave){
-        
-        if(atual.getRight() != null){
-            return minimumNode(atual.getRight()).getValue();
-        }
-        else if(atual.getLeft() != null ){
-            return maximumNode(atual.getRight()).getValue();
-        }
-        else{
-
+        if (atual == null || chave == maximumNode(root).getValue()) {
+            System.out.println("Não há Sucessor");
             return -1;
         }
-
+        if (atual.getRight() != null) {
+            return minimumNode(atual.getRight()).getValue();
         }
-        //     int maisProximo = atual.getValue();
-        //     if(atual.getLeft() == null){
-        //         return maisProximo;
-        //     } else{
-        //         return searchSucessor(atual.get(), chave);
-        //     }
-        // }
-        // if(chave > atual.getValue()){
-        //     int maisProximo = atual.getValue();
-        //     if(atual.getRight() == null){
-        //         return maisProximo;
-        //     } else{
-        //         return searchSucessor(atual.get(), chave);
-        //     }
-        // }
-    
 
+        Node father = searchFather(root, chave);
+
+        while (father != null && atual == father.getRight()) {
+            atual = father;
+            father = searchFather(root, atual.getValue());
+        }
+        if (father == null) {
+            System.out.println("Não há Sucessor");
+            return -1;
+        }
+        else {
+            return father.getValue();
+        }
+    }
 
     @Override
     public int prodessor(int chave) {
-        Node temp = search(chave);
+        
+        Node atual = findNode(root, chave);
 
-        if(temp == null){
-            return null;
+        if (atual == null || atual == minimumNode(root)) {
+            System.out.println("Não há prodessor");
+             return -1;
         }
-
-        temp = findNode(root, chave);
-
-        if(temp.getRight() == null && temp.getLeft() == null){
-            return searchFather(root, chave).getValue();
+        if (atual.getLeft() != null) {
+            return maximumNode(atual.getLeft()).getValue();
         }
-
-        else{
-            return searchSucesor().getValue();
+        Node father = searchFather(root, chave);
+        while (father != null && atual == father.getLeft()) {
+            atual = father;
+            father = searchFather(root, atual.getValue());
         }
-        return 0;
+        if (father == null) {
+            return -1;
+        } else {
+            return father.getValue();
+        }
     }
+
 
     public static void main(String[] args) {
         BST tree = new BST();
@@ -271,10 +241,25 @@ public class BST implements EstruturaDeDados{
         tree.insert(6);
         tree.insert(7);
         tree.insert(5);
-        // System.out.println(tree.search(5));
+        tree.insert(-3);
+        tree.insert(-2);
+        tree.insert(10);
+        tree.insert(9);
+        tree.insert(11);
+
+        System.out.println(tree.search(7));
+        tree.delete(7);
+        System.out.println(tree.search(7));
+        System.out.println(tree.maximum());
+        System.out.println(tree.minimum());
+        System.out.println(tree.sucessor(tree.root.getValue()));
+        System.out.println(tree.prodessor(tree.root.getValue()));
+
         // System.out.println(tree.maximum());
         // System.out.println(tree.search(7));
-        Node temp = tree.searchFather(tree.root, 0);
-        System.out.println(temp.getValue());
+        // Node temp = tree.searchFather(tree.root, );
+        // System.out.println(temp.getValue());
+
+        // System.out.println(tree.search(7));
     }
 }
