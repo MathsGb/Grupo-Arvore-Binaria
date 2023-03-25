@@ -79,21 +79,6 @@ public class BST implements EstruturaDeDados{
         return searchNode(root, key);
     }
 
-    // private Node searchSpecific(int instance ,int key) {
-
-    //     if(instance != 1 && instance != 2){
-    //         System.out.println("por favor escolha entre 1('Encontra pai') ou 2('encontra nó')");
-    //         return null;
-    //     }
-    //     else{
-    //         if(instance == 1){
-    //             return searchFatherNode(root, key);
-    //         }
-    //         return findNode(root, key);
-    //     }
-    // }
-
-
     private boolean searchNode(Node n, int key){
         if (n.getValue() == key){
             return true;
@@ -112,42 +97,32 @@ public class BST implements EstruturaDeDados{
         }
     }
 
-    private Node searchFather(Node pai, int key){ // 2 e chave é 0
-        
-        if(pai.getRight().getValue() == key || pai.getLeft().getValue() == key){
+    private Node searchFather(Node pai, int key){ 
+        boolean verify = search(key);  // Para eliminar casos onde quer saber o pai de um número que não está na arvoré
+        if(verify == false){
+            return null;
+        }
+        if(pai == root){ // Para o caso onde o pai é a raiz (Optei por retronar ele mesmo).
             return pai;
         }
-        // if (pai.getRight() != null)
-        // {
-        //     if(pai.getRight().getValue() == key){
-        //         return pai;
-        //     }
-        // }
-
-        // else if(pai.getLeft() != null){
-        //     if(pai.getLeft().getValue() == key){
-        //         return pai;
-        //     }
-        // }
-
-        else if (key > pai.getValue())
-        {
-            if (pai.getRight() == null){
-                return null;
-            } else {
-                return searchFather(pai.getRight(),key);
+        if(pai.getLeft() != null ){
+            
+            if(pai.getLeft().getValue() == key){
+                return pai;
             }
         }
-        else
-        {
-            if (pai.getLeft() == null)
-            {
-                return null;
-            }
-            else{
-                return searchFather(pai.getLeft(), key);
+        if(pai.getRight() != null){
+            if(pai.getRight().getValue() == key){
+                return pai;
             }
         }
+        if(key > pai.getValue()){
+            return searchFather(pai.getRight(),key);
+
+        }
+        
+            return searchFather(pai.getLeft(), key);
+
     }
 
     private Node findNode(Node atual, int key){
@@ -287,17 +262,19 @@ public class BST implements EstruturaDeDados{
         BST tree = new BST();
         
         tree.insert(4);
-        tree.insert(0);
+        tree.insert(-1);
         tree.insert(2);
         tree.insert(3);
         tree.insert(1);
-        tree.insert(5);
+        tree.insert(0);
+        tree.insert(8);
         tree.insert(6);
         tree.insert(7);
+        tree.insert(5);
         // System.out.println(tree.search(5));
         // System.out.println(tree.maximum());
         // System.out.println(tree.search(7));
-        
-        System.out.println(tree.sucessor());
+        Node temp = tree.searchFather(tree.root, 0);
+        System.out.println(temp.getValue());
     }
 }
